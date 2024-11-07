@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/Cpp_logo.png</file>
+        <file>resources/icon_camera4.png</file>
+        <file>resources/Nvidia_logo.png</file>
+        <file>resources/OpenCV_logo.png</file>
+        <file>resources/OpenMP_logo.png</file>
+        <file>resources/Qt_logo.png</file>
+        <file>resources/icon_camera4.ico</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,5 @@
+# Ignore the build folder
+/build/
+
+# Ignore the Inno Setup script
+inno_script_imaging_instruments.iss
