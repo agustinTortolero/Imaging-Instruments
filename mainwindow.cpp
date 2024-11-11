@@ -173,7 +173,7 @@ void ImagingInstrumentsView::addDescription(QVBoxLayout *layout)
 {
     QString description =
         "<p><b>Imaging Instruments</b> is a high-performance image processing application crafted for efficiency and designed to deliver powerful and reliable image manipulation capabilities.<br>"
-        "Developed using the <b>Model-View-Controller (MVC)</b> architecture, <b>Imaging Instruments</b> harnesses the full potential of modern technologies, combining <b>C++</b>, <b>Qt</b>, <b>CUDA-C</b>, and <b>OpenCV</b> to deliver a powerful and seamless experience for both professionals and enthusiasts.<br>"
+        "Developed using the <b>Model-View-Controller (MVC)</b> architecture, <b>Imaging Instruments</b> harnesses the full potential of modern technologies, combining <b>C++</b>, <b>Qt6</b>, <b>CUDA-C</b>, and <b>OpenCV</b> to deliver a powerful and seamless experience for both professionals and enthusiasts.<br>"
         "With multi-threading support via <b>OpenMP</b> and GPU acceleration through <b>CUDA-C</b>, <b>Imaging Instruments</b> provides lightning-fast image processing, unlocking the full capabilities of modern hardware.</p>"
         "<p>Built and designed by Agustin Tortolero. Fueled by copious amounts of yerba mate.</p>"
         "<p><b>Contact</b>: agustin.tortolero@proton.me</p>"
