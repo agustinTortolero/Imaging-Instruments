@@ -449,12 +449,8 @@ void ImagingInstrumentsController::applyColorEnhancement() {
     size_t X = model->inputImage.cols;
     cv::Mat outputImage;
 
-#ifdef _WIN32
     QString pluginPath = QCoreApplication::applicationDirPath() + "/libs/color_enhancement.dll";
     logMessage("Plugin Path: " + pluginPath, STATUS_MSG);
-#else
-    QString pluginPath = qApp->applicationDirPath() + FILTERS_SUBFOLDER + "libcolor_enhancement_plugin.so";
-#endif
 
     QPluginLoader pluginLoader(pluginPath);
     if (!pluginLoader.instance()) {
