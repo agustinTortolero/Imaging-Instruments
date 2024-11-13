@@ -3,3 +3,6 @@
 
 # Ignore the Inno Setup script
 inno_script_imaging_instruments.iss
+
+
+Imaging_Instruments.pro.user
