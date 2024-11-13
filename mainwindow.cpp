@@ -238,8 +238,11 @@ void ImagingInstrumentsView::showHardwareInfo()
     int cpuCores = std::thread::hardware_concurrency();
     QString cpuInfo = QString("CPU Cores: %1").arg(cpuCores);
 
-    // Get CPU name from the Windows registry
+    // Get CPU name based on platform
     QString cpuName;
+
+#ifdef _WIN32
+    // Windows: Get CPU name from the registry
     HKEY hKey;
     if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0"), 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
         TCHAR buffer[256];
@@ -251,9 +254,27 @@ void ImagingInstrumentsView::showHardwareInfo()
     } else {
         cpuName = "Unknown CPU";
     }
+#elif __linux__
+    // Linux: Get CPU name from /proc/cpuinfo
+    std::ifstream cpuInfoFile("/proc/cpuinfo");
+    std::string line;
+    while (std::getline(cpuInfoFile, line)) {
+        if (line.find("model name") != std::string::npos) {
+            size_t pos = line.find(":");
+            if (pos != std::string::npos) {
+                cpuName = QString::fromStdString(line.substr(pos + 1));
+                break;
+            }
+        }
+    }
+    if (cpuName.isEmpty()) {
+        cpuName = "Unknown CPU";
+    }
+#endif
 
     cpuInfo = QString("CPU: %1\nCores: %2").arg(cpuName).arg(cpuCores);
 
+    // Get GPU info if CUDA is available
     QString gpuInfo;
 #ifdef USE_CUDA
     int deviceCount;
@@ -274,6 +295,7 @@ void ImagingInstrumentsView::showHardwareInfo()
     gpuInfo = "CUDA not enabled.";
 #endif
 
+    // Combine all the info and show it in a message box
     QString info = cpuInfo + "\n" + gpuInfo;
     QMessageBox::information(this, "Hardware Info", info);
 }
