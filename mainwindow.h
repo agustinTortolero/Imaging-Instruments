@@ -39,7 +39,18 @@
 #include <cuda_runtime.h>
 #endif
 
-#include <windows.h>
+#ifdef _WIN32
+#include <Windows.h>
+#include <cuda_runtime.h>
+#endif
+
+#ifdef __linux__
+#include <fstream>
+#include <sstream>
+#include <unistd.h>
+#include <cuda_runtime.h>
+#endif
+
 #include <thread>
 
 #include "opencv2/opencv.hpp"

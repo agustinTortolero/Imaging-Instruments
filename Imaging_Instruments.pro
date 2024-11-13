@@ -13,8 +13,18 @@ RESOURCES += resources.qrc
 
 RC_ICONS += resources/icon_camera4.ico
 
-# Include directories for OpenCV
-INCLUDEPATH += C:/opencv/opencv/build/include
+# Platform-specific configurations
+win32: {
+    # Windows specific include paths
+    INCLUDEPATH += C:/opencv/opencv/build/include
+    CUDA_PATH = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.4"
+}
+
+linux: {
+    # Linux specific include paths
+    INCLUDEPATH += /usr/include/opencv4
+    CUDA_PATH = "/usr/local/cuda"
+}
 
 # Source and header files
 HEADERS += \
@@ -26,9 +36,6 @@ HEADERS += \
     model.h \
     paint_on_img.h \
     plugin_interface.h \
-    #plugin_interface_color_enhancement.h \
-    #plugin_interface_filtering.h \
-    #plugin_interface_noise.h \
     video_player.h \
     video_settings.h
 
@@ -47,28 +54,27 @@ SOURCES += \
 FORMS += mainwindow.ui
 
 # Linker settings for Qt and OpenCV
-release {
+win32: {
     LIBS += -LC:/opencv/opencv/build/x64/vc16/lib \
             -lopencv_world490 \
             -ladvapi32
 }
 
-debug {
-    LIBS += -LC:/opencv/opencv/build/x64/vc16/lib \
-            -lopencv_world490d \
-            -ladvapi32
+linux: {
+    LIBS += -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_videoio -lopencv_video -lopencv_ml -lopencv_imgcodecs
 }
 
-# Specify the CUDA installation path
-CUDA_PATH = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.4"
-
-DEFINES += USE_CUDA
-
-
+# Specify the CUDA installation path for both platforms
 INCLUDEPATH += $$CUDA_PATH/include
 
 # Link against CUDA libraries
-LIBS += -L$$CUDA_PATH/lib/x64 -lcudart -lcuda
+win32: {
+    LIBS += -L$$CUDA_PATH/lib/x64 -lcudart -lcuda
+}
+
+linux: {
+    LIBS += -L$$CUDA_PATH/lib64 -lcudart -lcuda
+}
 
 # Specify the library search path
 release {
@@ -95,25 +101,50 @@ CONFIG += automoc autouic
 # Output directory for the build
 DESTDIR = $$OUT_PWD/bin
 
-# Copy the DLLs to the output directory after building
-QMAKE_POST_LINK += \
-    copy $$PWD/libs/release/gpu_filtering.dll $$OUT_PWD/ && \
-    copy $$PWD/libs/release/vector_filtering_lib.dll $$OUT_PWD/ && \
-    copy $$PWD/libs/release/color_enhancement.dll $$OUT_PWD/ && \
-    copy $$PWD/libs/release/impulse_noise2.dll $$OUT_PWD/ && \
-    copy "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.4/bin/cudart64_12.dll" $$DESTDIR && \
-    copy "C:/Windows/System32/ucrtbase.dll" $$DESTDIR
-
-# Release-specific DLLs
-release {
+# Platform-specific post-link actions
+win32: {
+    # Copy DLLs and other necessary files
     QMAKE_POST_LINK += \
-        copy C:/opencv/opencv/build/x64/vc16/bin/opencv_world490.dll $$DESTDIR
+        copy $$PWD/libs/release/gpu_filtering.dll $$OUT_PWD/ && \
+        copy $$PWD/libs/release/vector_filtering_lib.dll $$OUT_PWD/ && \
+        copy $$PWD/libs/release/color_enhancement.dll $$OUT_PWD/ && \
+        copy $$PWD/libs/release/impulse_noise2.dll $$OUT_PWD/ && \
+        copy "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.4/bin/cudart64_12.dll" $$DESTDIR && \
+        copy "C:/Windows/System32/ucrtbase.dll" $$DESTDIR
+
+    # Release-specific DLLs
+    release {
+        QMAKE_POST_LINK += \
+            copy C:/opencv/opencv/build/x64/vc16/bin/opencv_world490.dll $$DESTDIR
+    }
+
+    # Debug-specific DLLs
+    debug {
+        QMAKE_POST_LINK += \
+            copy C:/opencv/opencv/build/x64/vc16/bin/opencv_world490d.dll $$DESTDIR
+    }
 }
 
-# Debug-specific DLLs
-debug {
+linux: {
+    # Linux-specific post-link actions
     QMAKE_POST_LINK += \
-        copy C:/opencv/opencv/build/x64/vc16/bin/opencv_world490d.dll $$DESTDIR
+        cp $$PWD/libs/release/libgpu_filtering.so $$DESTDIR/ && \
+        cp $$PWD/libs/release/libvector_filtering_lib.so $$DESTDIR/ && \
+        cp $$PWD/libs/release/libcolor_enhancement.so $$DESTDIR/ && \
+        cp $$PWD/libs/release/libimpulse_noise2.so $$DESTDIR/ && \
+        cp $$CUDA_PATH/lib64/stubs/libcuda.so $$DESTDIR/
+
+    # Release-specific shared libraries
+    release {
+        QMAKE_POST_LINK += \
+            cp /usr/lib/x86_64-linux-gnu/libopencv_world.so $$DESTDIR
+    }
+
+    # Debug-specific shared libraries
+    debug {
+        QMAKE_POST_LINK += \
+            cp /usr/lib/x86_64-linux-gnu/libopencv_world.so.$$QT_BUILD $$DESTDIR
+    }
 }
 
 # Load the current build number from the file
@@ -121,31 +152,22 @@ BUILD_NUMBER_FILE = $$PWD/build_number.txt
 
 # Check if the build number file exists and read/write commands for cross-platform compatibility
 macx: {
-    # macOS / Linux command
     exists($$BUILD_NUMBER_FILE) {
         BUILD_NUMBER = $$system(cat $$BUILD_NUMBER_FILE)
     } else {
         BUILD_NUMBER = 0
     }
 
-    # Increment the build number
     BUILD_NUMBER_INCREMENTED = $$eval($$BUILD_NUMBER + 1)
-
-    # Write the new build number back to the file
     QMAKE_POST_LINK += echo $$BUILD_NUMBER_INCREMENTED > $$BUILD_NUMBER_FILE
-
 } else: {
-    # Windows command
     exists($$BUILD_NUMBER_FILE) {
         BUILD_NUMBER = $$system(type $$BUILD_NUMBER_FILE)
     } else {
         BUILD_NUMBER = 0
     }
 
-    # Increment the build number
     BUILD_NUMBER_INCREMENTED = $$eval($$BUILD_NUMBER + 1)
-
-    # Write the new build number back to the file
     QMAKE_POST_LINK += echo $$BUILD_NUMBER_INCREMENTED > $$BUILD_NUMBER_FILE
 }
 
@@ -154,5 +176,3 @@ DEFINES += BUILD_NUMBER=\\\"$$BUILD_NUMBER_INCREMENTED\\\"
 
 # Optional: Print the current build number in the output directory for reference
 message(Build number is: $$BUILD_NUMBER_INCREMENTED)
-
-
