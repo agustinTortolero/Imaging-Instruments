@@ -10,11 +10,23 @@
 #include "opencv2/opencv.hpp"
 
 
+// Platform-specific macro for export/import
+#ifdef _WIN32  // Windows platform
 #ifdef BUILDING_DLL
-#define DELLEXPORT __declspec(dllexport)
+#define DELLEXPORT __declspec(dllexport)  // Export symbols when building the DLL
 #else
-#define DELLEXPORT __declspec(dllimport)
+#define DELLEXPORT __declspec(dllimport)  // Import symbols when using the DLL
 #endif
+#elif __linux__  // Linux platform
+#ifdef BUILDING_DLL
+#define DELLEXPORT __attribute__((visibility("default")))  // Export symbols for shared library
+#else
+#define DELLEXPORT  // No special import declaration on Linux
+#endif
+#else
+#error "Unsupported platform"
+#endif
+
 
 class ImageFiltering {
 public:

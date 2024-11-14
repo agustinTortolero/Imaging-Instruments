@@ -3,8 +3,30 @@ CONFIG += plugin c++17
 
 QT += core
 
-# Include OpenCV headers
-INCLUDEPATH += C:/opencv/opencv/build/include
+win32: {
+    INCLUDEPATH += C:/opencv/opencv/build/include
+    LIBS += -LC:/opencv/opencv/build/x64/vc16/lib \
+            -lopencv_world490  # Release version of OpenCV
+    DESTDIR_RELEASE = C:/AgustinTortolero_repos/Qt_gui_projects/Imaging_Toolbox/MVC_imaging_toolbox2/libs/release
+    DESTDIR_DEBUG = C:/AgustinTortolero_repos/Qt_gui_projects/Imaging_Toolbox/MVC_imaging_toolbox2/libs/debug
+    # OpenMP for MSVC (Windows)
+    QMAKE_CXXFLAGS += /openmp
+    QMAKE_LFLAGS += /openmp
+}
+
+# Linux specific
+linux: {
+    INCLUDEPATH += /usr/include/opencv4
+    LIBS += -L/usr/lib/x86_64-linux-gnu \
+            -lopencv_core -lopencv_imgproc -lopencv_highgui  # Adjust this according to the OpenCV version installed
+    DESTDIR_RELEASE = /home/agustin/ImagingInstruments-Projects/Imaging-Instruments/build/Desktop_Qt_6_7_3-Release/bin/libs/
+
+    DESTDIR_DEBUG = /home/agustin/ImagingInstruments-Projects/Imaging-Instruments/build/Desktop_Qt_6_7_3-Debug/bin/libs/debug
+    # OpenMP for GCC (Linux)
+    QMAKE_CXXFLAGS += -fopenmp
+    QMAKE_LFLAGS += -fopenmp
+}
+
 
 # Specify sources and headers
 SOURCES += \
@@ -20,24 +42,9 @@ HEADERS += \
 # Define preprocessor macro for the plugin build
 DEFINES += IMPULSE_NOISE_LIBRARY
 
-# Set output directories consistent with vector_filtering_lib
-DESTDIR_RELEASE = C:/AgustinTortolero_repos/Qt_gui_projects/Imaging_Toolbox/MVC_imaging_toolbox2/libs/release
-DESTDIR_DEBUG = C:/AgustinTortolero_repos/Qt_gui_projects/Imaging_Toolbox/MVC_imaging_toolbox2/libs/debug
-
-# OpenCV library paths and different linking for release and debug
+# Platform-specific `DESTDIR` handling
 CONFIG(debug, debug|release) {
-    LIBS += -LC:/opencv/opencv/build/x64/vc16/lib \
-            -lopencv_world490d   # Debug version of OpenCV
     DESTDIR = $$DESTDIR_DEBUG
 } else {
-    LIBS += -LC:/opencv/opencv/build/x64/vc16/lib \
-            -lopencv_world490    # Release version of OpenCV
     DESTDIR = $$DESTDIR_RELEASE
 }
-
-# Enable OpenMP for both release and debug
-QMAKE_CXXFLAGS_RELEASE += /openmp
-QMAKE_CXXFLAGS_DEBUG += /openmp
-QMAKE_LFLAGS_RELEASE += /openmp
-QMAKE_LFLAGS_DEBUG += /openmp
-

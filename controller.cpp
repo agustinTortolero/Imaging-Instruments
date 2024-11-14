@@ -270,7 +270,8 @@ void ImagingInstrumentsController::applyImpulseNoise()
         }
     }
 
-    QString pluginPath = QCoreApplication::applicationDirPath() + "/libs/impulse_noise2.dll";
+    //QString pluginPath = QCoreApplication::applicationDirPath() + "/libs/impulse_noise2.dll";
+    QString pluginPath = QCoreApplication::applicationDirPath() + "/libs_arm64/release/libimpulse_noise2.so";
     logMessage("Plugin Path: " + pluginPath, STATUS_MSG); // Log the plugin path
 
     QPluginLoader pluginLoader(pluginPath);
@@ -373,7 +374,7 @@ void ImagingInstrumentsController::applyVectorFilter()
         model->outputImage = model->inputImage.clone(); // Initialize outputImage
         try {
             // Call the DLL function to filter the image
-            filter.run_filter(model->inputImage, model->outputImage); // Using the function from your DLL
+            //filter.run_filter(model->inputImage, model->outputImage); // Using the function from your DLL
         } catch (const std::exception &e) {
             logMessage("DLL filter execution failed: " + QString::fromStdString(e.what()), ERROR_MSG);  // Log message
             QMessageBox::warning(image_view, tr("Warning"), tr("DLL filter execution failed."));

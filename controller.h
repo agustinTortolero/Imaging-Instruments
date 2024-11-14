@@ -35,7 +35,7 @@
 
 #include "plugin_interface.h"
 #include "gpu_filtering.h"
-#include "vector_filtering_lib.h"
+#include "vector_filtering.h"
 
 #include "model.h"
 #include "mainwindow.h"
