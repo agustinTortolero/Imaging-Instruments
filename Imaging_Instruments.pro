@@ -1,49 +1,36 @@
+# Specify the project type and configuration
 TEMPLATE = app
 CONFIG += c++17
 
+# Specify the Qt modules required
 QT += core gui widgets multimedia multimediawidgets charts
 
+# Specify the target name
 TARGET = Imaging_Instruments
 
+# Add resources
 RESOURCES += resources.qrc
 
 RC_ICONS += resources/icon_camera4.ico
 
+# Platform-specific configurations
+win32: {
+    # Windows specific include paths
+    INCLUDEPATH += C:/opencv/opencv/build/include
+    CUDA_PATH = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.4"
+}
 
 linux: {
-    message("Linux")
-    message("$$PWD/libs_arm64/release")
+    # Linux specific include paths
     INCLUDEPATH += /usr/include/opencv4
     CUDA_PATH = "/usr/local/cuda"
-
-    # Check if the system is ARM64 or x86_64
-    is_arm64: {
-        message("ARM64 CPU ")
-        # ARM64 specific library paths
-        LIBS += -L$$PWD/libs_arm64/release \
-                -lgpu_filtering \
-                -lvector_filtering \
-                -lcolor_enhancement \
-                -limpulse_noise2
-    }
-    is_x86_64: {
-        message("x86_64 CPU")
-        #
-        LIBS += -L$$PWD/libs_x86_64/release \
-                -lgpu_filtering \
-                -lvector_filtering \
-                -lcolor_enhancement \
-                -limpulse_noise2
-
-    }
 }
 
 # Source and header files
 HEADERS += \
-    #custom_graphics_view.h \
+    custom_graphics_view.h \
     gpu_filtering.h \
     image_view.h \
-    vector_filtering.h \
     mainwindow.h \
     controller.h \
     model.h \
@@ -53,7 +40,7 @@ HEADERS += \
     video_settings.h
 
 SOURCES += \
-    #custom_graphics_view.cpp \
+    custom_graphics_view.cpp \
     image_view.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -91,21 +78,22 @@ linux: {
 
 # Specify the library search path
 release {
-    LIBS += -L$$PWD/libs_arm64/release
-    INCLUDEPATH += $$PWD/libs_arm64/release
+    LIBS += -L$$PWD/libs/release
+    INCLUDEPATH += $$PWD/libs/release
 }
 
 debug {
-    LIBS += -L$$PWD/libs_arm64/debug
-    INCLUDEPATH += $$PWD/libs_arm64/debug
+    LIBS += -L$$PWD/libs/debug
+    INCLUDEPATH += $$PWD/libs/debug
 }
 
 # Link against custom libraries
-LIBS += -L$$PWD/libs_arm64/release \
+LIBS += -L$$PWD/libs \
         -lgpu_filtering \
-        -lvector_filtering \
+        -lvector_filtering_lib \
         -lcolor_enhancement \
-        -limpulse_noise2
+        -limpulse_noise2 \
+        -lVectorFiltering
 
 # Ensure that the Qt MOC and UIC tools run automatically
 CONFIG += automoc autouic
@@ -118,7 +106,7 @@ win32: {
     # Copy DLLs and other necessary files
     QMAKE_POST_LINK += \
         copy $$PWD/libs/release/gpu_filtering.dll $$OUT_PWD/ && \
-        copy $$PWD/libs/release/vector_filtering.dll $$OUT_PWD/ && \
+        copy $$PWD/libs/release/vector_filtering_lib.dll $$OUT_PWD/ && \
         copy $$PWD/libs/release/color_enhancement.dll $$OUT_PWD/ && \
         copy $$PWD/libs/release/impulse_noise2.dll $$OUT_PWD/ && \
         copy "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.4/bin/cudart64_12.dll" $$DESTDIR && \
@@ -138,50 +126,53 @@ win32: {
 }
 
 linux: {
-    # Linux-specific post-link actions for ARM64 or x86_64
-    is_arm64: {
-        # For ARM64 systems, copy the ARM64 libraries
+    # Linux-specific post-link actions
+    QMAKE_POST_LINK += \
+        cp $$PWD/libs/release/libgpu_filtering.so $$DESTDIR/ && \
+        cp $$PWD/libs/release/libvector_filtering_lib.so $$DESTDIR/ && \
+        cp $$PWD/libs/release/libcolor_enhancement.so $$DESTDIR/ && \
+        cp $$PWD/libs/release/libimpulse_noise2.so $$DESTDIR/ && \
+        cp $$CUDA_PATH/lib64/stubs/libcuda.so $$DESTDIR/
+
+    # Release-specific shared libraries
+    release {
         QMAKE_POST_LINK += \
-            cp $$PWD/libs_arm64/release/libgpu_filtering.so $$DESTDIR/ && \
-            cp $$PWD/libs_arm64/release/libvector_filtering.so $$DESTDIR/ && \
-            cp $$PWD/libs_arm64/release/libcolor_enhancement.so $$DESTDIR/ && \
-            cp $$PWD/libs_arm64/release/libimpulse_noise2.so $$DESTDIR/ && \
-            cp $$CUDA_PATH/lib64/stubs/libcuda.so $$DESTDIR/
-
-        # Release-specific shared libraries for ARM64
-        release {
-            QMAKE_POST_LINK += \
-                cp /usr/lib/aarch64-linux-gnu/libopencv_world.so $$DESTDIR
-        }
-
-        # Debug-specific shared libraries for ARM64
-        debug {
-            QMAKE_POST_LINK += \
-                cp /usr/lib/aarch64-linux-gnu/libopencv_world.so.$$QT_BUILD $$DESTDIR
-        }
+            cp /usr/lib/x86_64-linux-gnu/libopencv_world.so $$DESTDIR
     }
 
-    is_x86_64: {
-        # For x86_64 systems, copy the x86_64 libraries
+    # Debug-specific shared libraries
+    debug {
         QMAKE_POST_LINK += \
-            cp $$PWD/libs_x86_64/release/libgpu_filtering.so $$DESTDIR/ && \
-            cp $$PWD/libs_x86_64/release/libvector_filtering.so $$DESTDIR/ && \
-            cp $$PWD/libs_x86_64/release/libcolor_enhancement.so $$DESTDIR/ && \
-            cp $$PWD/libs_x86_64/release/libimpulse_noise2.so $$DESTDIR/ && \
-            cp $$CUDA_PATH/lib64/stubs/libcuda.so $$DESTDIR/
-
-        # Release-specific shared libraries for x86_64
-        release {
-            QMAKE_POST_LINK += \
-                cp /usr/lib/x86_64-linux-gnu/libopencv_world.so $$DESTDIR
-        }
-
-        # Debug-specific shared libraries for x86_64
-        debug {
-            QMAKE_POST_LINK += \
-                cp /usr/lib/x86_64-linux-gnu/libopencv_world.so.$$QT_BUILD $$DESTDIR
-        }
+            cp /usr/lib/x86_64-linux-gnu/libopencv_world.so.$$QT_BUILD $$DESTDIR
     }
 }
 
+# Load the current build number from the file
+BUILD_NUMBER_FILE = $$PWD/build_number.txt
 
+# Check if the build number file exists and read/write commands for cross-platform compatibility
+macx: {
+    exists($$BUILD_NUMBER_FILE) {
+        BUILD_NUMBER = $$system(cat $$BUILD_NUMBER_FILE)
+    } else {
+        BUILD_NUMBER = 0
+    }
+
+    BUILD_NUMBER_INCREMENTED = $$eval($$BUILD_NUMBER + 1)
+    QMAKE_POST_LINK += echo $$BUILD_NUMBER_INCREMENTED > $$BUILD_NUMBER_FILE
+} else: {
+    exists($$BUILD_NUMBER_FILE) {
+        BUILD_NUMBER = $$system(type $$BUILD_NUMBER_FILE)
+    } else {
+        BUILD_NUMBER = 0
+    }
+
+    BUILD_NUMBER_INCREMENTED = $$eval($$BUILD_NUMBER + 1)
+    QMAKE_POST_LINK += echo $$BUILD_NUMBER_INCREMENTED > $$BUILD_NUMBER_FILE
+}
+
+# Define a macro to be used in the application
+DEFINES += BUILD_NUMBER=\\\"$$BUILD_NUMBER_INCREMENTED\\\"
+
+# Optional: Print the current build number in the output directory for reference
+message(Build number is: $$BUILD_NUMBER_INCREMENTED)
