@@ -145,7 +145,7 @@ void ImagingInstrumentsView::addVersionInfo(QVBoxLayout *layout)
     QString compilationTime = QTime::currentTime().toString("hh:mm");
 
     // Construct the version string with the compilation date and time
-    QString version = QString("Version 0.8 (Built on %1 at %2)").arg(compilationDate, compilationTime);
+    QString version = QString("Version 0.8 (Built on 23/11/2024)");
 
     // Create and configure the label
     QLabel *versionLabel = new QLabel(version);
